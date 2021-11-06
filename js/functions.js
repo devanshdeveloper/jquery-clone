@@ -1,3 +1,17 @@
+const styleToString = (style) => {
+  return Object.keys(style).reduce(
+    (acc, key) =>
+      acc +
+      key
+        .split(/(?=[A-Z])/)
+        .join("-")
+        .toLowerCase() +
+      ": " +
+      style[key] +
+      "; ",
+    ""
+  );
+};
 // check for type
 function isString(e) {
   return typeof e === "string" || e instanceof String;
@@ -13,17 +27,12 @@ function evalString(e) {
   return e.replaceAll(" ", "");
 }
 
-const styleToString = (style) => {
-  return Object.keys(style).reduce(
-    (acc, key) =>
-      acc +
-      key
-        .split(/(?=[A-Z])/)
-        .join("-")
-        .toLowerCase() +
-      ":" +
-      style[key] +
-      ";",
-    ""
-  );
-};
+function is(type, e, ...otherBooleans) {
+  if (typeof e != type) {
+    throw new TypeError(`needs ${type} instead got ${e}`);
+  }
+  if (!otherBooleans.every((e) => e)) {
+    throw new TypeError(``);
+  }
+}
+

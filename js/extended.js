@@ -5,18 +5,25 @@ class ElementSelector {
   }
 
   // looping over elements
-  mapElements(func) {
+  mapElements(func = () => {}) {
     if (this.elementList.length === 0) return;
-    return this.elementList.length < 2
+    return this.elementList.length < 1
       ? func(this.elementList[0])
       : this.elementList.map(func);
   }
-  forEachELement(func) {
+
+  forEachELement(func = () => {}) {
     if (this.elementList.length === 0) return;
-    this.elementList.length < 2
+    this.elementList.length < 1
       ? func(this.elementList[0])
       : this.elementList.forEach(func);
     return this;
+  }
+
+  forEach(func) {
+    this.elementList.forEach((e, i) => {
+      func(new CreateReference(e), i);
+    });
   }
 
   // getters
@@ -28,10 +35,26 @@ class ElementSelector {
     return this.elementList;
   }
 
-  first(num = 1) {
-    this.elementList = this.elementList.slice(0, num);
+  get attri() {
+    return this.element.attributes;
+  }
+
+  // setters
+
+  setEls(newNodeList) {
+    this.elementList = [...newNodeList];
+    this.element = this.elementList[0];
     return this;
   }
+
+  first(num = 1) {
+    return this.setEls(this.elementList.slice(0, num));
+  }
+
+  select(i) {
+    return this.setEls([this.elementList[i]]);
+  }
+
   // classes
   addClass(...className) {
     return this.forEachELement((e) => e.classList.add(...className));
@@ -49,7 +72,7 @@ class ElementSelector {
       return this.forEachELement((e) => e.addEventListener(type, func));
     else {
       return this.forEachELement((e) => {
-        for (const key in type) e.addEventListener(key, type[key]);
+        mapObject(type, (x, y) => e.addEventListener(x, y));
       });
     }
   }
@@ -58,15 +81,29 @@ class ElementSelector {
     return this.on("click", func);
   }
 
+  hover(func) {
+    return this.on("mouseover", func);
+  }
+
+  dblclick(func) {
+    return this.on("dblclick", func);
+  }
+
+  hold(func, delay = 2000) {
+    let eventInterval;
+    this.hover(() => (eventInterval = setTimeout(func, delay)));
+    this.on("mousedown", () => clearInterval(eventInterval));
+    return this;
+  }
+
   // styling
   style(styles) {
-    return this.forEachELement(() => {
-      this.attr(
-        "style",
-        (this.attr("style") ?? "") +
-          (isString(styles) ? styles : styleToString(styles))
-      );
-    });
+    if (isString(styles))
+      return this.forEachELement((e) => (e.style.cssText += styles));
+    else
+      return this.forEachELement((e) => {
+        mapObject(styles, (x, y) => (e.style[x] = y));
+      });
   }
 
   // direct css
@@ -76,7 +113,16 @@ class ElementSelector {
 
   // props
   html(innerHTML) {
+    if (!innerHTML) return this.element.innerHTML;
     return this.forEachELement((e) => (e.innerHTML = innerHTML));
+  }
+
+  disable(boolean = true) {
+    return this.forEachELement((e) => (e.disabled = boolean));
+  }
+  
+  checked(boolean = true) {
+    return this.forEachELement((e) => (e.checked = boolean));
   }
 
   attr(attr, value) {
@@ -95,13 +141,24 @@ class ElementSelector {
   appendTo(el) {
     return this.forEachELement((e) => el.el.append(e));
   }
+
+  previousNode() {
+    return this.setEls(this.mapElements((e) => e.previousElementSibling));
+  }
 }
 
 class CreateElement extends ElementSelector {
-  constructor(tagName, num) {
+  constructor(tagName) {
     super();
-    this.element = document.createElement(tagName);
-    this.elementList = Array(num).fill(document.createElement(tagName));
+    this.elementList = [document.createElement(tagName)];
+    this.element = this.elementList[0];
+  }
+}
+class CreateReference extends ElementSelector {
+  constructor(node) {
+    super();
+    this.elementList = [node];
+    this.element = this.elementList[0];
   }
 }
 
@@ -116,23 +173,3 @@ function $$$(tagName, num = 1) {
 function onload(func) {
   addEventListener("DOMContentLoaded", func);
 }
-
-onload(() => {
-  $$$("p")
-    .click(() => {
-      $("input").style({
-        accentColor: "green",
-      });
-    })
-    .appendTo($("div"));
-  $$$("input")
-    .addClass("input")
-    .style({
-      accentColor: "red",
-    })
-    .attr("type", "range")
-    .on("input", (e) => {
-      $("p").first(2).html(e.target.value);
-    })
-    .appendTo($("div"));
-});
