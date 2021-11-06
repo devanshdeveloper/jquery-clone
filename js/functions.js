@@ -1,21 +1,18 @@
-const styleToString = (style) => {
-  return Object.keys(style).reduce(
-    (acc, key) =>
-      acc +
-      key
-        .split(/(?=[A-Z])/)
-        .join("-")
-        .toLowerCase() +
-      ": " +
-      style[key] +
-      "; ",
-    ""
-  );
-};
 // check for type
 function isString(e) {
   return typeof e === "string" || e instanceof String;
 }
+const styleToString = (style) => {
+  if (isString(style)) return style;
+  return Object.keys(style).reduce(
+    (acc, key) =>
+      `${acc}${key
+        .split(/(?=[A-Z])/)
+        .join("-")
+        .toLowerCase()}: ${style[key]};`,
+    ""
+  );
+};
 
 function mapObject(obj, func) {
   let arr = [];
@@ -35,4 +32,3 @@ function is(type, e, ...otherBooleans) {
     throw new TypeError(``);
   }
 }
-

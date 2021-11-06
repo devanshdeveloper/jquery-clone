@@ -2,6 +2,9 @@
 <html lang="en">
 
 <head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet" crossorigin>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,20 +13,34 @@
 </head>
 
 <body>
-   Score : <span id="score">0</span>
+    <div id="showScore">Score :<span id="score">0</span></div>
     <div class="container">
-        <span id="q"></span>
+        <div id="q"></div>
         <div id="options">
-            <label for="1"></label>
-            <input type="checkbox" id="1">
-            <label for="2"></label>
-            <input type="checkbox" id="2">
-            <label for="3"></label>
-            <input type="checkbox" id="3">
-            <label for="4"></label>
-            <input type="checkbox" id="4">
+            <div class="option">
+                <input type="checkbox" id="1">
+                <label for="1"></label>
+            </div>
+            <div class="option">
+                <input type="checkbox" id="2">
+                <label for="2"></label>
+            </div>
+            <div class="option">
+                <input type="checkbox" id="3">
+                <label for="3"></label>
+            </div>
+            <div class="option">
+                <input type="checkbox" id="4">
+                <label for="4"></label>
+            </div>
         </div>
         <button id="next"></button>
+    </div>
+    <div class="fadeOut">
+        <div id="modal">
+            <p></p>
+            <button>New Game</button>
+        </div>
     </div>
     <script src="js/functions.js"></script>
     <script src="js/extended.js"></script>

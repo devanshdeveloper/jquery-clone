@@ -1,18 +1,19 @@
 class ElementSelector {
   constructor(query) {
+    this.query = query;
     this.elementList = [...document.querySelectorAll(query)];
     this.element = document.querySelector(query);
   }
 
   // looping over elements
-  mapElements(func = () => {}) {
+  mapElements(func = () => { }) {
     if (this.elementList.length === 0) return;
     return this.elementList.length < 1
       ? func(this.elementList[0])
       : this.elementList.map(func);
   }
 
-  forEachELement(func = () => {}) {
+  forEachELement(func = () => { }) {
     if (this.elementList.length === 0) return;
     this.elementList.length < 1
       ? func(this.elementList[0])
@@ -37,6 +38,10 @@ class ElementSelector {
 
   get attri() {
     return this.element.attributes;
+  }
+
+  get styles() {
+    return this.element.style;
   }
 
   // setters
@@ -70,11 +75,10 @@ class ElementSelector {
   on(type, func) {
     if (isString(type))
       return this.forEachELement((e) => e.addEventListener(type, func));
-    else {
+    else
       return this.forEachELement((e) => {
         mapObject(type, (x, y) => e.addEventListener(x, y));
       });
-    }
   }
 
   click(func) {
@@ -96,6 +100,10 @@ class ElementSelector {
     return this;
   }
 
+  change(func) {
+    return this.on("change", func);
+  }
+
   // styling
   style(styles) {
     if (isString(styles))
@@ -107,20 +115,40 @@ class ElementSelector {
   }
 
   // direct css
-  hide(boolean = true) {
-    return this.forEachELement((e) => (e.hidden = boolean));
+  css(cssString, selector = "") {
+    $$$("style")
+      .html(`${this.query}${selector}{${styleToString(cssString)}}`)
+      .appendTo($("head"));
   }
 
+  // animate(
+  //   cssString,
+  //   selector,
+  //   { prop = "all", duration = 2000, timingFunc = "liner", delay = 0 } = {}
+  // ) {
+  //   this.css(
+  //     `transition: ${prop} ${duration / 1000}s ${timingFunc} ${
+  //       delay === 0 ? delay : delay / 1000
+  //     }s;`
+  //   );
+  //   this.css(cssString, selector);
+  //   return this
+  // }
+
   // props
+  hide(boolean = true, prop = "block") {
+    return this.forEachELement((e) => (e.style.display = boolean ? "none" : prop));
+  }
+
   html(innerHTML) {
     if (!innerHTML) return this.element.innerHTML;
-    return this.forEachELement((e) => (e.innerHTML = innerHTML));
+    else return this.forEachELement((e) => (e.innerHTML = innerHTML));
   }
 
   disable(boolean = true) {
     return this.forEachELement((e) => (e.disabled = boolean));
   }
-  
+
   checked(boolean = true) {
     return this.forEachELement((e) => (e.checked = boolean));
   }
@@ -141,9 +169,14 @@ class ElementSelector {
   appendTo(el) {
     return this.forEachELement((e) => el.el.append(e));
   }
-
-  previousNode() {
+  previousElement() {
     return this.setEls(this.mapElements((e) => e.previousElementSibling));
+  }
+  nextElement() {
+    return this.setEls(this.mapElements((e) => e.nextElementSibling));
+  }
+  parent() {
+    return this.setEls(this.mapElements((e) => e.parentElement));
   }
 }
 
