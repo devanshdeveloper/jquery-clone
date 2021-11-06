@@ -75,8 +75,7 @@ function loadQuestion(i) {
   let q = questions[currentQ];
   $("#q").html(q.q).attr("title", q.q);
   $("#options label").forEach((e, i) =>
-    e
-      .html(q.options[i])
+    e.html(q.options[i])
       .attr("title", q.options[i])
       .style({ color: "black" })
       .parent()
@@ -110,7 +109,6 @@ onload(() => {
   $("#options input").change((e) => checkAns(+e.target.id - 1));
   $("#next")
     .click(() => loadQuestion(currentQ + 1))
-    .html("Next -->");
+    .html("Next-->");
   $("#modal").parent().hide()
-  // console.log($("#result").styles);
 });

@@ -56,8 +56,8 @@ class ElementSelector {
     return this.setEls(this.elementList.slice(0, num));
   }
 
-  select(i) {
-    return this.setEls([this.elementList[i]]);
+  select(...index) {
+    return this.setEls(this.elementList.filter((e, i) => index.includes(i)));
   }
 
   // classes
