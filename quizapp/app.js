@@ -112,3 +112,5 @@ onload(() => {
     .html("Next-->");
   $("#modal").parent().hide()
 });
+
+$("#options input").mapElements()

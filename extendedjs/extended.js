@@ -1,30 +1,41 @@
 class ElementSelector {
   constructor(query) {
-    this.query = query;
     this.elementList = [...document.querySelectorAll(query)];
+    // if(this.elementList.length === 0) {
+    //   throw TypeError(`no element found with ${this.query}`)
+    // }
+    this.query = query;
     this.element = document.querySelector(query);
   }
 
   // looping over elements
-  mapElements(func = () => { }) {
+  mapElements(func = () => {}) {
     if (this.elementList.length === 0) return;
-    return this.elementList.length < 1
-      ? func(this.elementList[0])
-      : this.elementList.map(func);
+    if (this.elementList.length === 1) return [func(this.elementList[0])];
+    else {
+      let arr = [];
+      for (let i = 0; i < this.elementList.length; i++) {
+        arr.push(func(this.elementList[i], i, this.elementList));
+      }
+      return arr;
+    }
   }
 
-  forEachELement(func = () => { }) {
+  forEachELement(func = () => {}) {
     if (this.elementList.length === 0) return;
-    this.elementList.length < 1
-      ? func(this.elementList[0])
-      : this.elementList.forEach(func);
+    if (this.elementList.length === 1) func(this.elementList[0]);
+    else {
+      for (let i = 0; i < this.elementList.length; i++) {
+        func(this.elementList[i], i, this.elementList);
+      }
+    }
     return this;
   }
 
   forEach(func) {
-    this.elementList.forEach((e, i) => {
-      func(new CreateReference(e), i);
-    });
+    for (let i = 0; i < this.elementList.length; i++) {
+      func(new CreateReference(this.elementList[i]), i);
+    }
   }
 
   // getters
@@ -81,6 +92,10 @@ class ElementSelector {
       });
   }
 
+  removerEvent(type, func) {
+    return this.forEachELement((e) => e.removeEventListener(type, func));
+  }
+
   click(func) {
     return this.on("click", func);
   }
@@ -95,9 +110,33 @@ class ElementSelector {
 
   hold(func, delay = 2000) {
     let eventInterval;
-    this.hover(() => (eventInterval = setTimeout(func, delay)));
-    this.on("mousedown", () => clearInterval(eventInterval));
+    const clearFunc = () => {
+      clearInterval(eventInterval);
+      console.log("clearFunc");
+    };
+    this.on(
+      "mouseenter",
+      (e) =>
+        (eventInterval = setTimeout(() => {
+          console.log("hover");
+          func(e, clearFunc);
+        }, delay))
+    );
+    this.on("mousedown", clearFunc);
     return this;
+  }
+
+  removeHold(func, clearFunc) {
+    this.removerEvent("mouseover", func);
+    return this.removerEvent("mousedown", clearFunc);
+  }
+
+  keypress(obj) {
+    return this.on("keypress", (e) => {
+      mapObject(obj, (x, y) => {
+        if (x === e.key) y();
+      });
+    });
   }
 
   change(func) {
@@ -121,23 +160,11 @@ class ElementSelector {
       .appendTo($("head"));
   }
 
-  // animate(
-  //   cssString,
-  //   selector,
-  //   { prop = "all", duration = 2000, timingFunc = "liner", delay = 0 } = {}
-  // ) {
-  //   this.css(
-  //     `transition: ${prop} ${duration / 1000}s ${timingFunc} ${
-  //       delay === 0 ? delay : delay / 1000
-  //     }s;`
-  //   );
-  //   this.css(cssString, selector);
-  //   return this
-  // }
-
   // props
   hide(boolean = true, prop = "block") {
-    return this.forEachELement((e) => (e.style.display = boolean ? "none" : prop));
+    return this.forEachELement(
+      (e) => (e.style.display = boolean ? "none" : prop)
+    );
   }
 
   html(innerHTML) {
@@ -169,6 +196,9 @@ class ElementSelector {
   appendTo(el) {
     return this.forEachELement((e) => el.el.append(e));
   }
+  prependTo(el) {
+    return this.forEachELement((e) => el.el.prepend(e));
+  }
   previousElement() {
     return this.setEls(this.mapElements((e) => e.previousElementSibling));
   }
@@ -177,6 +207,9 @@ class ElementSelector {
   }
   parent() {
     return this.setEls(this.mapElements((e) => e.parentElement));
+  }
+  child() {
+    return this.setEls(this.mapElements((e) => e.children));
   }
 }
 
@@ -188,9 +221,9 @@ class CreateElement extends ElementSelector {
   }
 }
 class CreateReference extends ElementSelector {
-  constructor(node) {
+  constructor(...node) {
     super();
-    this.elementList = [node];
+    this.elementList = [...node];
     this.element = this.elementList[0];
   }
 }
@@ -203,6 +236,41 @@ function $$$(tagName, num = 1) {
   return new CreateElement(tagName, num);
 }
 
+function on(type, func) {
+  addEventListener(type, func);
+}
+
 function onload(func) {
-  addEventListener("DOMContentLoaded", func);
+  on("DOMContentLoaded", func);
+}
+
+function keypress(obj) {
+  on("keypress", (e) => {
+    mapObject(obj, (x, y) => {
+      if (x === e.key) y();
+    });
+  });
+}
+
+function useFont(fontName) {
+  function createLinkTag(attrObj) {
+    $$$("link").attr(attrObj).prependTo($("head"));
+  }
+  createLinkTag({
+    rel: "preconnect",
+    href: "https://fonts.googleapis.com",
+  });
+  createLinkTag({
+    rel: "preconnect",
+    href: "https://fonts.gstatic.com",
+    crossorigin: "true",
+  });
+  createLinkTag({
+    href: `https://fonts.googleapis.com/css2?family=${fontName}&display=swap`,
+    rel: "stylesheet",
+  });
+}
+
+function refEl(...el) {
+  return new CreateReference(...el);
 }
